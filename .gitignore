@@ -1,0 +1,33 @@
+### General ###
+target/
+logs/
+bin/
+!.mvn/wrapper/maven-wrapper.jar
+*.db
+*.class
+
+### Gradle ###
+.gradle/
+
+### STS ###
+.apt_generated
+.classpath
+.factorypath
+.project
+.settings/
+.springBeans
+
+### NetBeans ###
+nbproject/private/
+build/
+nbbuild/
+dist/
+nbdist/
+.nb-gradle/
+README.md
+
+### IntelliJ IDEA ###
+.idea
+*.iws
+*.iml
+*.ipr

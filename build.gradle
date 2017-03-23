@@ -1,0 +1,108 @@
+buildscript {
+	ext {
+		springBootVersion = '1.4.4.RELEASE'
+	}
+	repositories {
+		mavenCentral()
+	}
+	dependencies {
+			classpath("org.springframework.boot:spring-boot-gradle-plugin:${springBootVersion}")
+			classpath("org.jfrog.buildinfo:build-info-extractor-gradle:latest.release")
+	}
+}
+
+apply plugin: 'java'
+apply plugin: 'maven'
+apply plugin: 'maven-publish'
+apply plugin: 'eclipse-wtp'
+apply plugin: 'org.springframework.boot'
+apply plugin: 'com.jfrog.artifactory'
+apply plugin: "jacoco" // Java Code Coverage
+
+apply from: 'gradle/pipeline.gradle'
+
+group = 'boeing.app.tiger'
+version = getProp('newVersion') ?: '0.0.1-SNAPSHOT'
+
+ext {
+    projectGroupId = project.group
+    projectArtifactId = project.name
+    projectVersion = project.version
+    repoKey = getProp('REPO_KEY') ?: 'Maven-Snapshots'
+}
+
+jar {
+	baseName = 'Java_REST_API_Template'
+}
+sourceCompatibility = 1.8
+targetCompatibility = 1.8
+
+repositories {
+    mavenCentral()
+}
+
+configurations {
+	providedRuntime
+}
+
+dependencies {
+	// Relational Database Needs:
+	compile('org.springframework.boot:spring-boot-starter-data-jpa')
+	compile('org.springframework.boot:spring-boot-starter-jdbc')
+	runtime('com.microsoft.sqlserver:sqljdbc4:4.0')
+	//runtime('com.h2database:h2') // may need for in-memory DB access
+
+	// Non-Relational Database Needs:
+	//compile('org.springframework.boot:spring-boot-starter-data-mongodb')
+
+	// Spring Needs:
+	compile('org.springframework.boot:spring-boot-starter-web')
+	//compile('org.springframework.data:spring-data-releasetrain:Fowler-RELEASE') // may need so that repository layer supports streams (used with a queryable API)
+
+	// API Framework Needs:
+	compile('io.springfox:springfox-swagger2:2.4.0')
+	compile('io.springfox:springfox-swagger-ui:2.4.0')
+
+	// DevOps Needs:
+	compile('org.springframework.boot:spring-boot-devtools')
+	compile('org.springframework.boot:spring-boot-starter-actuator')
+	compile('org.springframework.boot:spring-boot-actuator-docs')
+	//compile('org.springframework.hateoas:spring-hateoas')
+	providedRuntime('org.springframework.boot:spring-boot-starter-tomcat')
+	testCompile('org.springframework.restdocs:spring-restdocs-mockmvc')
+	
+	// Test Needs:
+	testCompile('org.springframework.boot:spring-boot-starter-test')
+	testCompile('org.mockito:mockito-core:1.10.19')
+	testCompile('com.googlecode.junit-toolbox:junit-toolbox:2.2')
+	
+}
+
+artifactory {
+    contextUrl = getProp('ARTIFACTORY_URL') ?: 'https://sres.web.boeing.com/artifactory'
+    publish {
+        repository {
+            repoKey = "${repoKey}"
+            username = "${mavenUser}"
+            password = "${mavenPassword}"
+            maven = true
+        }
+        defaults {
+            publications ('mavenJava')
+        }
+    }
+}
+
+publishing {
+    publications {
+        mavenJava(MavenPublication) {
+            from components.java
+        }
+    }
+}
+
+String getProp(String propName) {
+	return hasProperty(propName) ?
+			(getProperty(propName) ?: System.properties[propName]) : System.properties[propName] ?:
+			System.getenv(propName)
+}

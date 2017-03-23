@@ -1,0 +1,11 @@
+---
+applications:
+- name: Java_REST_API_Template
+  memory: 512M
+  instances: 1
+  host: java_rest_api_template
+#  domain: apps.pcfpre-phx.cloud.krishna.com
+#  services:
+#  - RestDBMSSQL
+  path: ./build/libs/Java_REST_API_Template-0.0.1-SNAPSHOT.jar
+  buildpack: java_buildpack_offline_latest
